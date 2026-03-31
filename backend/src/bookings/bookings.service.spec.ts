@@ -23,6 +23,7 @@ describe('BookingsService', () => {
 
   const mockBookingRepository = {
     findOne: jest.fn(),
+    count: jest.fn(),
     save: jest.fn(),
     createQueryBuilder: jest.fn(),
   };
@@ -80,6 +81,7 @@ describe('BookingsService', () => {
     mockUserRepository.findOneBy.mockResolvedValue(user);
     mockParkingSpotRepository.findOneBy.mockResolvedValue(parkingSpot);
     mockBookingRepository.findOne.mockResolvedValue(null);
+    mockBookingRepository.count.mockResolvedValue(0);
     mockBookingRepository.save.mockResolvedValue(savedBooking);
 
     const result = await service.create(dto, 10);
@@ -119,6 +121,7 @@ describe('BookingsService', () => {
     mockUserRepository.findOneBy.mockResolvedValue({ id: 10 });
     mockParkingSpotRepository.findOneBy.mockResolvedValue({ id: 2 });
     mockBookingRepository.findOne.mockResolvedValue({ id: 42 });
+    mockBookingRepository.count.mockResolvedValue(0);
 
     await expect(service.create(dto, 10)).rejects.toBeInstanceOf(
       ConflictException,
@@ -126,5 +129,104 @@ describe('BookingsService', () => {
     await expect(service.create(dto, 10)).rejects.toThrow(
       'Parking spot already booked for this date',
     );
+  });
+
+  it('throws when employee reaches the active booking limit', async () => {
+    const dto = { date: new Date('2026-03-31'), parkingSpotId: 2 };
+
+    mockUserRepository.findOneBy.mockResolvedValue({
+      id: 10,
+      role: 'employee',
+    });
+    mockParkingSpotRepository.findOneBy.mockResolvedValue({ id: 2 });
+    mockBookingRepository.findOne.mockResolvedValue(null);
+    mockBookingRepository.count.mockResolvedValue(5);
+
+    await expect(service.create(dto, 10)).rejects.toBeInstanceOf(
+      ConflictException,
+    );
+    await expect(service.create(dto, 10)).rejects.toThrow(
+      'Employees and secretaries can only have 5 active bookings at a time',
+    );
+    expect(mockBookingRepository.save).not.toHaveBeenCalled();
+  });
+
+  it('throws when secretary reaches the active booking limit', async () => {
+    const dto = { date: new Date('2026-03-31'), parkingSpotId: 2 };
+
+    mockUserRepository.findOneBy.mockResolvedValue({
+      id: 10,
+      role: 'secretary',
+    });
+    mockParkingSpotRepository.findOneBy.mockResolvedValue({ id: 2 });
+    mockBookingRepository.findOne.mockResolvedValue(null);
+    mockBookingRepository.count.mockResolvedValue(6);
+
+    await expect(service.create(dto, 10)).rejects.toBeInstanceOf(
+      ConflictException,
+    );
+    await expect(service.create(dto, 10)).rejects.toThrow(
+      'Employees and secretaries can only have 5 active bookings at a time',
+    );
+    expect(mockBookingRepository.save).not.toHaveBeenCalled();
+  });
+
+  it('allows employee booking below the active booking limit', async () => {
+    const dto = { date: new Date('2026-03-31'), parkingSpotId: 2 };
+    const user = { id: 10, role: 'employee' };
+    const parkingSpot = { id: 2 };
+    const savedBooking = {
+      id: 100,
+      date: dto.date,
+      user,
+      parking_spot: parkingSpot,
+    };
+
+    mockUserRepository.findOneBy.mockResolvedValue(user);
+    mockParkingSpotRepository.findOneBy.mockResolvedValue(parkingSpot);
+    mockBookingRepository.findOne.mockResolvedValue(null);
+    mockBookingRepository.count.mockResolvedValue(4);
+    mockBookingRepository.save.mockResolvedValue(savedBooking);
+
+    await expect(service.create(dto, 10)).resolves.toEqual(savedBooking);
+    expect(mockBookingRepository.save).toHaveBeenCalled();
+  });
+
+  it('throws when manager reaches the active booking limit', async () => {
+    const dto = { date: new Date('2026-03-31'), parkingSpotId: 2 };
+
+    mockUserRepository.findOneBy.mockResolvedValue({ id: 10, role: 'manager' });
+    mockParkingSpotRepository.findOneBy.mockResolvedValue({ id: 2 });
+    mockBookingRepository.findOne.mockResolvedValue(null);
+    mockBookingRepository.count.mockResolvedValue(30);
+
+    await expect(service.create(dto, 10)).rejects.toBeInstanceOf(
+      ConflictException,
+    );
+    await expect(service.create(dto, 10)).rejects.toThrow(
+      'Managers can only have 30 active bookings at a time',
+    );
+    expect(mockBookingRepository.save).not.toHaveBeenCalled();
+  });
+
+  it('allows manager booking below the active booking limit', async () => {
+    const dto = { date: new Date('2026-03-31'), parkingSpotId: 2 };
+    const user = { id: 10, role: 'manager' };
+    const parkingSpot = { id: 2 };
+    const savedBooking = {
+      id: 101,
+      date: dto.date,
+      user,
+      parking_spot: parkingSpot,
+    };
+
+    mockUserRepository.findOneBy.mockResolvedValue(user);
+    mockParkingSpotRepository.findOneBy.mockResolvedValue(parkingSpot);
+    mockBookingRepository.findOne.mockResolvedValue(null);
+    mockBookingRepository.count.mockResolvedValue(29);
+    mockBookingRepository.save.mockResolvedValue(savedBooking);
+
+    await expect(service.create(dto, 10)).resolves.toEqual(savedBooking);
+    expect(mockBookingRepository.save).toHaveBeenCalled();
   });
 });

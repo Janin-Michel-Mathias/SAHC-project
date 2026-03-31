@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { CreateBookingDto } from './dto/create-booking.dto';
-import { Repository } from 'typeorm';
+import { MoreThanOrEqual, Repository } from 'typeorm';
 import { ParkingSpot } from '../parking-spots/entities/parkingSpots.entity';
 import { Booking } from './entities/booking.entity';
 import { User } from 'src/users/entities/user.entity';
@@ -46,6 +46,30 @@ export class BookingsService {
       },
       relations: ['parking_spot'],
     });
+
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+
+    const usersBookings = await this.bookingRepository.count({
+      where: {
+        user: { id: userId },
+        date: MoreThanOrEqual(startOfToday),
+        is_cancelled: false,
+      },
+    });
+
+    if (
+      (user.role === 'employee' || user.role === 'secretary') &&
+      usersBookings >= 5
+    ) {
+      throw new ConflictException(
+        'Employees and secretaries can only have 5 active bookings at a time',
+      );
+    } else if (user.role === 'manager' && usersBookings >= 30) {
+      throw new ConflictException(
+        'Managers can only have 30 active bookings at a time',
+      );
+    }
 
     if (existingBooking) {
       throw new ConflictException('Parking spot already booked for this date');

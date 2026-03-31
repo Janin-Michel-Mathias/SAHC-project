@@ -74,17 +74,28 @@ export class BookingsService {
       .andWhere('booking.is_cancelled = false')
       .getMany();
 
-    console.log(bookings);
-    const bookedSpotIds = new Set(
-      bookings.map((booking) => booking.parking_spot.id),
-    );
+    const bookingsMap = new Map<number, Booking>();
+    bookings.forEach((booking) => {
+      bookingsMap.set(booking.parking_spot.id, booking);
+    });
 
-    return parkingSpots.map((spot) => ({
-      id: spot.id,
-      row: spot.row,
-      column: spot.col,
-      isElectric: spot.is_electric,
-      isBooked: bookedSpotIds.has(spot.id),
-    }));
+    return parkingSpots.map((spot) => {
+      const booking = bookingsMap.get(spot.id);
+      return {
+        id: spot.id,
+        row: spot.row,
+        column: spot.col,
+        isElectric: spot.is_electric,
+        bookedBy: booking
+          ? {
+              id: booking.user.id,
+              email: booking.user.email,
+              first_name: booking.user.first_name,
+              last_name: booking.user.last_name,
+              role: booking.user.role,
+            }
+          : null,
+      };
+    });
   }
 }

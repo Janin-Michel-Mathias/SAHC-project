@@ -1,9 +1,14 @@
-import { Inject, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { Repository } from 'typeorm';
-import { ParkingSpot } from './entities/parkingSpots.entity';
+import { ParkingSpot } from '../parking-spots/entities/parkingSpots.entity';
 import { Booking } from './entities/booking.entity';
-import { ParkingSpotsDto } from './dto/parking-spots.dto';
+import { ParkingSpotsDto } from '../parking-spots/dto/parking-spots.dto';
 import { User } from 'src/users/entities/user.entity';
 
 @Injectable()
@@ -23,7 +28,7 @@ export class BookingsService {
     });
 
     if (!user) {
-      throw new Error('User not found');
+      throw new NotFoundException('User not found');
     }
 
     const parkingSpot = await this.parkingSpotRepository.findOneBy({
@@ -31,7 +36,7 @@ export class BookingsService {
     });
 
     if (!parkingSpot) {
-      throw new Error('Parking spot not found');
+      throw new NotFoundException('Parking spot not found');
     }
 
     const existingBooking = await this.bookingRepository.findOne({
@@ -44,7 +49,7 @@ export class BookingsService {
     });
 
     if (existingBooking) {
-      throw new Error('Parking spot already booked for this date');
+      throw new ConflictException('Parking spot already booked for this date');
     }
 
     const booking = new Booking();
@@ -56,6 +61,10 @@ export class BookingsService {
   }
 
   async findAllParkingSpots(date: Date): Promise<ParkingSpotsDto[]> {
+    if (!date) {
+      throw new Error('Date query parameter is required');
+    }
+
     const startOfDay = new Date(date);
     startOfDay.setHours(0, 0, 0);
     const endOfDay = new Date(date);

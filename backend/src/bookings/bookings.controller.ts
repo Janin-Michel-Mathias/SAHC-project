@@ -1,8 +1,8 @@
 import { Controller, Get, Post, Body, Query, UseGuards } from '@nestjs/common';
 import { BookingsService } from './bookings.service';
 import { CreateBookingDto } from './dto/create-booking.dto';
-import { AuthGuard } from 'src/auth/auth.guard';
-import { CurrentUser, type JwtPayload } from 'src/auth/current-user.decorator';
+import { AuthGuard } from '../auth/auth.guard';
+import { CurrentUser, type JwtPayload } from '../auth/current-user.decorator';
 
 @Controller('bookings')
 export class BookingsController {

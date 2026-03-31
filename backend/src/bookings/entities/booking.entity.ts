@@ -7,7 +7,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
-import { ParkingSpot } from './parkingSpots.entity';
+import { ParkingSpot } from '../../parking-spots/entities/parkingSpots.entity';
 
 @Entity()
 export class Booking {

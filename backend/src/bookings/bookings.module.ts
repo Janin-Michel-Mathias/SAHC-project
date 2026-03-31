@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { BookingsService } from './bookings.service';
 import { BookingsController } from './bookings.controller';
-import { parkingSpotProviders } from './parking-spots.providers';
+import { parkingSpotProviders } from '../parking-spots/parking-spots.providers';
 import { bookingProviders } from './bookings.providers';
 import { databaseProviders } from '../database.providers';
 import { AuthModule } from 'src/auth/auth.module';

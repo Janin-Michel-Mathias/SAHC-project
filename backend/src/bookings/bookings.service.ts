@@ -1,10 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { CreateBookingDto } from './dto/create-booking.dto';
-import { UpdateBookingDto } from './dto/update-booking.dto';
 import { Repository } from 'typeorm';
 import { ParkingSpot } from './entities/parkingSpots.entity';
 import { Booking } from './entities/booking.entity';
 import { ParkingSpotsDto } from './dto/parking-spots.dto';
+import { User } from 'src/users/entities/user.entity';
 
 @Injectable()
 export class BookingsService {
@@ -13,26 +13,34 @@ export class BookingsService {
     private parkingSpotRepository: Repository<ParkingSpot>,
     @Inject('BOOKING_REPOSITORY')
     private bookingRepository: Repository<Booking>,
+    @Inject('USER_REPOSITORY')
+    private userRepository: Repository<User>,
   ) {}
 
-  create(createBookingDto: CreateBookingDto) {
-    return 'This action adds a new booking';
-  }
+  async create(createBookingDto: CreateBookingDto) {
+    const booking = new Booking();
 
-  findAll() {
-    return `This action returns all bookings`;
-  }
+    const user = await this.userRepository.findOneBy({
+      id: createBookingDto.userId,
+    });
 
-  findOne(id: number) {
-    return `This action returns a #${id} booking`;
-  }
+    if (!user) {
+      throw new Error('User not found');
+    }
 
-  update(id: number, updateBookingDto: UpdateBookingDto) {
-    return `This action updates a #${id} booking`;
-  }
+    const parkingSpot = await this.parkingSpotRepository.findOneBy({
+      id: createBookingDto.parkingSpotId,
+    });
 
-  remove(id: number) {
-    return `This action removes a #${id} booking`;
+    if (!parkingSpot) {
+      throw new Error('Parking spot not found');
+    }
+
+    booking.date = createBookingDto.date;
+    booking.user = user;
+    booking.parking_spot = parkingSpot;
+
+    return this.bookingRepository.save(booking);
   }
 
   async findAllParkingSpots(date: Date): Promise<ParkingSpotsDto[]> {
@@ -63,8 +71,8 @@ export class BookingsService {
       id: spot.id,
       row: spot.row,
       column: spot.col,
-      is_electric: spot.is_electric,
-      is_booked: bookedSpotIds.has(spot.id),
+      isElectric: spot.is_electric,
+      isBooked: bookedSpotIds.has(spot.id),
     }));
   }
 }

@@ -17,10 +17,10 @@ export class Booking {
   @Column()
   date: Date;
 
-  @Column()
+  @Column({ default: false })
   has_checked_in: boolean;
 
-  @Column()
+  @Column({ default: false })
   is_cancelled: boolean;
 
   @CreateDateColumn()

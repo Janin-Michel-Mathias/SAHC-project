@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Query, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards } from '@nestjs/common';
 import { BookingsService } from './bookings.service';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { AuthGuard } from '../auth/auth.guard';
@@ -15,10 +15,5 @@ export class BookingsController {
     @CurrentUser() user: JwtPayload,
   ) {
     return this.bookingsService.create(createBookingDto, user.sub);
-  }
-
-  @Get()
-  findAllParkingSpots(@Query('date') date: Date) {
-    return this.bookingsService.findAllParkingSpots(date);
   }
 }

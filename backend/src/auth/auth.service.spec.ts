@@ -51,6 +51,8 @@ describe('AuthService', () => {
   it('login returns access token for valid credentials', async () => {
     const user = {
       id: 1,
+      first_name: 'John',
+      last_name: 'Doe',
       email: 'john@test.com',
       password: 'hashed-password',
       role: 'employee',
@@ -74,7 +76,14 @@ describe('AuthService', () => {
       email: 'john@test.com',
       role: 'employee',
     });
-    expect(result).toEqual({ accessToken: 'token-123' });
+    expect(result).toEqual({
+      accessToken: 'token-123',
+      id: 1,
+      email: 'john@test.com',
+      firstName: 'John',
+      lastName: 'Doe',
+      role: 'employee',
+    });
   });
 
   it('login throws UnauthorizedException when user does not exist', async () => {

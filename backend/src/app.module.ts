@@ -4,9 +4,16 @@ import { AdminModule } from './admin/admin.module';
 import { StatisticsModule } from './statistics/statistics.module';
 import { databaseProviders } from './database.providers';
 import { AuthModule } from './auth/auth.module';
+import { ParkingSpotsModule } from './parking-spots/parking-spots.module';
 
 @Module({
-  imports: [BookingsModule, AdminModule, StatisticsModule, AuthModule],
+  imports: [
+    BookingsModule,
+    AdminModule,
+    StatisticsModule,
+    AuthModule,
+    ParkingSpotsModule,
+  ],
   controllers: [],
   providers: [...databaseProviders],
   exports: [...databaseProviders],

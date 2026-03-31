@@ -27,6 +27,11 @@ export class AuthService {
     };
 
     return {
+      id: user.id,
+      email: user.email,
+      first_name: user.first_name,
+      last_name: user.last_name,
+      role: user.role,
       accessToken: this.jwtService.sign(payload),
     };
   }
@@ -38,6 +43,10 @@ export class AuthService {
     last_name: string,
     role: string,
   ) {
+    if (role !== 'employee' && role !== 'manager' && role !== 'secretary') {
+      throw new UnauthorizedException('Invalid role');
+    }
+
     const hashed = await bcrypt.hash(password, 10);
     const existingUser = await this.userRepository.findOneBy({ email });
 

@@ -1,0 +1,40 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:18
+    container_name: postgres_db
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: Respons11
+      POSTGRES_DB: sahc
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/18/docker
+  api:
+    build: ./backend
+    container_name: sahc_api
+    restart: always
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: Respons11
+      POSTGRES_DB: sahc
+      POSTGRES_PORT: 5432
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+  frontend:
+    build: ./frontend
+    container_name: sahc_frontend
+    restart: always
+    ports:
+      - "80:3000"
+    depends_on:
+      - api
+
+volumes:
+  postgres_data:

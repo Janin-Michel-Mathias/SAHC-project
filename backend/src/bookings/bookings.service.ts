@@ -17,11 +17,9 @@ export class BookingsService {
     private userRepository: Repository<User>,
   ) {}
 
-  async create(createBookingDto: CreateBookingDto) {
-    const booking = new Booking();
-
+  async create(createBookingDto: CreateBookingDto, userId: number) {
     const user = await this.userRepository.findOneBy({
-      id: createBookingDto.userId,
+      id: userId,
     });
 
     if (!user) {
@@ -36,6 +34,20 @@ export class BookingsService {
       throw new Error('Parking spot not found');
     }
 
+    const existingBooking = await this.bookingRepository.findOne({
+      where: {
+        parking_spot: { id: createBookingDto.parkingSpotId },
+        date: createBookingDto.date,
+        is_cancelled: false,
+      },
+      relations: ['parking_spot'],
+    });
+
+    if (existingBooking) {
+      throw new Error('Parking spot already booked for this date');
+    }
+
+    const booking = new Booking();
     booking.date = createBookingDto.date;
     booking.user = user;
     booking.parking_spot = parkingSpot;

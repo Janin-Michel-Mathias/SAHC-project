@@ -3,6 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Repository } from 'typeorm';
 import { User } from '../users/entities/user.entity';
 import * as bcrypt from 'bcrypt';
+import { JwtPayload } from './current-user.decorator';
 
 @Injectable()
 export class AuthService {
@@ -19,10 +20,14 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const payload = { sub: user.id, email: user.email, role: user.role };
+    const payload: Omit<JwtPayload, 'iat' | 'exp'> = {
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+    };
 
     return {
-      access_token: this.jwtService.sign(payload),
+      accessToken: this.jwtService.sign(payload),
     };
   }
 
@@ -34,6 +39,12 @@ export class AuthService {
     role: string,
   ) {
     const hashed = await bcrypt.hash(password, 10);
+    const existingUser = await this.userRepository.findOneBy({ email });
+
+    if (existingUser) {
+      throw new UnauthorizedException('Email already in use');
+    }
+
     const user = this.userRepository.create({
       email,
       password: hashed,

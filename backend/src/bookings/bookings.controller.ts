@@ -29,4 +29,10 @@ export class BookingsController {
   cancel(@Param('id') idBooking: string, @CurrentUser() user: JwtPayload) {
     return this.bookingsService.cancel(Number(idBooking), user.sub);
   }
+
+  @Post(':id/check-in')
+  @UseGuards(AuthGuard)
+  checkIn(@Param('id') idBooking: string, @CurrentUser() user: JwtPayload) {
+    return this.bookingsService.checkIn(Number(idBooking), user.sub);
+  }
 }

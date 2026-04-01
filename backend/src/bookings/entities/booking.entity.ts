@@ -20,6 +20,9 @@ export class Booking {
   @Column({ default: false })
   has_checked_in: boolean;
 
+  @Column({ nullable: true })
+  checked_in_at: Date;
+
   @Column({ default: false })
   is_cancelled: boolean;
 

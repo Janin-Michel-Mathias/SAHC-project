@@ -281,4 +281,59 @@ describe('BookingsService', () => {
       'You can only cancel your own bookings',
     );
   });
+
+  it('checks in a booking', async () => {
+    const booking = {
+      id: 60,
+      has_checked_in: false,
+      user: { id: 10 },
+    };
+
+    mockBookingRepository.findOne.mockResolvedValue(booking);
+    mockBookingRepository.save.mockResolvedValue({
+      ...booking,
+      has_checked_in: true,
+      checked_in_at: new Date(),
+    });
+
+    const result = await service.checkIn(60, 10);
+
+    expect(mockBookingRepository.findOne).toHaveBeenCalledWith({
+      where: { id: 60 },
+      relations: ['user'],
+    });
+    expect(mockBookingRepository.save).toHaveBeenCalledWith({
+      ...booking,
+      has_checked_in: true,
+      checked_in_at: new Date(),
+    });
+    expect(result.has_checked_in).toEqual(true);
+    expect(result.checked_in_at).toBeInstanceOf(Date);
+  });
+
+  it('throws when trying to check in to a non-existent booking', async () => {
+    mockBookingRepository.findOne.mockResolvedValue(null);
+
+    await expect(service.checkIn(999, 10)).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
+    await expect(service.checkIn(999, 10)).rejects.toThrow('Booking not found');
+  });
+
+  it('throws when trying to check in to a booking that belongs to another user', async () => {
+    const booking = {
+      id: 60,
+      has_checked_in: false,
+      user: { id: 20 },
+    };
+
+    mockBookingRepository.findOne.mockResolvedValue(booking);
+
+    await expect(service.checkIn(60, 10)).rejects.toBeInstanceOf(
+      ConflictException,
+    );
+    await expect(service.checkIn(60, 10)).rejects.toThrow(
+      'You can only check in to your own bookings',
+    );
+  });
 });

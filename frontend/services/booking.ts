@@ -19,3 +19,20 @@ export async function bookParkingSpot(date: Date, parkingSpotId: number) {
     }
     return await response.json();
 }
+
+export async function cancelParkingSpot(bookingId: number) {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}bookings/${bookingId}`, {
+        method: "DELETE",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${localStorage.getItem("token")}`
+        },
+    });
+
+    if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || "Une erreur s'est produite");
+    }
+
+    return await response.json();
+}

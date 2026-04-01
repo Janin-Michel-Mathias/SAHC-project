@@ -48,6 +48,7 @@ export class ParkingSpotsService {
         row: spot.row,
         column: spot.col,
         isElectric: spot.is_electric,
+        bookingId: booking ? booking.id : null,
         bookedBy: booking
           ? {
               id: booking.user.id,

@@ -5,10 +5,11 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { CreateBookingDto } from './dto/create-booking.dto';
-import { MoreThanOrEqual, Repository } from 'typeorm';
+import { LessThanOrEqual, MoreThanOrEqual, Repository } from 'typeorm';
 import { ParkingSpot } from '../parking-spots/entities/parkingSpots.entity';
 import { Booking } from './entities/booking.entity';
 import { User } from 'src/users/entities/user.entity';
+import { Cron } from '@nestjs/schedule';
 
 @Injectable()
 export class BookingsService {
@@ -120,5 +121,28 @@ export class BookingsService {
     booking.has_checked_in = true;
     booking.checked_in_at = new Date();
     return this.bookingRepository.save(booking);
+  }
+
+  @Cron('0 11 * * *')
+  async verifyCheckIn() {
+    const today = new Date();
+    today.setHours(23, 59, 0);
+
+    console.log('Running cron job to verify check-ins at', new Date());
+
+    const bookingsToCancel = await this.bookingRepository.find({
+      where: {
+        date: LessThanOrEqual(today),
+        has_checked_in: false,
+        is_cancelled: false,
+      },
+    });
+
+    for (const booking of bookingsToCancel) {
+      booking.has_checked_in = false;
+      booking.is_cancelled = true;
+      booking.cancelled_at = new Date();
+      await this.bookingRepository.save(booking);
+    }
   }
 }

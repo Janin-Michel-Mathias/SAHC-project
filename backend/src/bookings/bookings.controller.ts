@@ -5,6 +5,7 @@ import {
   UseGuards,
   Delete,
   Param,
+  HttpCode,
 } from '@nestjs/common';
 import { BookingsService } from './bookings.service';
 import { CreateBookingDto } from './dto/create-booking.dto';
@@ -32,6 +33,7 @@ export class BookingsController {
 
   @Post(':id/check-in')
   @UseGuards(AuthGuard)
+  @HttpCode(200)
   checkIn(@Param('id') idBooking: string, @CurrentUser() user: JwtPayload) {
     return this.bookingsService.checkIn(Number(idBooking), user.sub);
   }

@@ -305,7 +305,7 @@ describe('BookingsService', () => {
     expect(mockBookingRepository.save).toHaveBeenCalledWith({
       ...booking,
       has_checked_in: true,
-      checked_in_at: new Date(),
+      checked_in_at: result.checked_in_at,
     });
     expect(result.has_checked_in).toEqual(true);
     expect(result.checked_in_at).toBeInstanceOf(Date);

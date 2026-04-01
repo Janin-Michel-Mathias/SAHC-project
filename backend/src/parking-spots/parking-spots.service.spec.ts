@@ -82,6 +82,7 @@ describe('ParkingSpotsService', () => {
         row: 1,
         column: 1,
         isElectric: false,
+        bookingId: null,
         bookedBy: null,
       },
       {
@@ -89,12 +90,15 @@ describe('ParkingSpotsService', () => {
         row: 1,
         column: 2,
         isElectric: true,
+        bookingId: 12,
         bookedBy: {
           id: 5,
           email: 'booked@test.com',
           first_name: 'Jane',
           last_name: 'Doe',
           role: 'employee',
+          created_at: undefined,
+          deleted_at: undefined,
         },
       },
     ]);

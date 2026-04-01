@@ -6,12 +6,12 @@ import {
 } from '@nestjs/common';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { Between, Repository } from 'typeorm';
-import { Booking } from 'src/bookings/entities/booking.entity';
-import { User } from 'src/users/entities/user.entity';
-import { ParkingSpot } from 'src/parking-spots/entities/parkingSpots.entity';
+import { Booking } from '../bookings/entities/booking.entity';
+import { User } from '../users/entities/user.entity';
+import { ParkingSpot } from '../parking-spots/entities/parkingSpots.entity';
 import { UpdateBookingDto } from './dto/update-booking.dto';
 import { CreateUserDto } from './dto/create-user.dto';
-import { AuthService } from 'src/auth/auth.service';
+import { AuthService } from '../auth/auth.service';
 
 @Injectable()
 export class AdminService {

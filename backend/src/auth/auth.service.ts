@@ -22,7 +22,7 @@ export class AuthService {
 
     const payload: Omit<JwtPayload, 'iat' | 'exp'> = {
       sub: user.id,
-      email: user.email,
+      email: user.email || '',
       role: user.role,
     };
 

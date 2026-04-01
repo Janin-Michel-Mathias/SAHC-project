@@ -17,7 +17,7 @@ export class BookingsController {
   constructor(private readonly bookingsService: BookingsService) {}
 
   @Post()
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard())
   create(
     @Body() createBookingDto: CreateBookingDto,
     @CurrentUser() user: JwtPayload,
@@ -26,13 +26,13 @@ export class BookingsController {
   }
 
   @Delete(':id')
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard())
   cancel(@Param('id') idBooking: string, @CurrentUser() user: JwtPayload) {
     return this.bookingsService.cancel(Number(idBooking), user.sub);
   }
 
   @Post(':id/check-in')
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard())
   @HttpCode(200)
   checkIn(@Param('id') idBooking: string, @CurrentUser() user: JwtPayload) {
     return this.bookingsService.checkIn(Number(idBooking), user.sub);

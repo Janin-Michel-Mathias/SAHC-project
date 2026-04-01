@@ -56,6 +56,8 @@ export class ParkingSpotsService {
               first_name: booking.user.first_name,
               last_name: booking.user.last_name,
               role: booking.user.role,
+              created_at: booking.user.created_at,
+              deleted_at: booking.user.deleted_at,
             }
           : null,
       };

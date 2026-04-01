@@ -4,7 +4,6 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { databaseProviders } from '../database.providers';
 import { userProviders } from '../users/users.providers';
-import { AuthGuard } from './auth.guard';
 
 @Module({
   imports: [
@@ -13,8 +12,8 @@ import { AuthGuard } from './auth.guard';
       signOptions: { expiresIn: '24h' },
     }),
   ],
-  exports: [JwtModule, AuthGuard],
+  exports: [JwtModule],
   controllers: [AuthController],
-  providers: [...databaseProviders, ...userProviders, AuthService, AuthGuard],
+  providers: [...databaseProviders, ...userProviders, AuthService],
 })
 export class AuthModule {}

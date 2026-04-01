@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { CreateBookingDto } from './dto/create-booking.dto';
-import { LessThanOrEqual, MoreThanOrEqual, Repository } from 'typeorm';
+import { Between, LessThanOrEqual, MoreThanOrEqual, Repository } from 'typeorm';
 import { ParkingSpot } from '../parking-spots/entities/parkingSpots.entity';
 import { Booking } from './entities/booking.entity';
 import { User } from 'src/users/entities/user.entity';
@@ -39,22 +39,28 @@ export class BookingsService {
       throw new NotFoundException('Parking spot not found');
     }
 
+    const startDate = new Date(createBookingDto.date);
+    const endDate = new Date(createBookingDto.date);
+    startDate.setHours(0, 0, 0);
+    endDate.setHours(23, 59, 59);
+
     const existingBooking = await this.bookingRepository.findOne({
       where: {
         parking_spot: { id: createBookingDto.parkingSpotId },
-        date: createBookingDto.date,
+        date: Between(startDate, endDate),
         is_cancelled: false,
       },
       relations: ['parking_spot'],
     });
 
-    const startOfToday = new Date();
-    startOfToday.setHours(0, 0, 0, 0);
+    if (existingBooking) {
+      throw new ConflictException('Parking spot already booked for this date');
+    }
 
     const usersBookings = await this.bookingRepository.count({
       where: {
         user: { id: userId },
-        date: MoreThanOrEqual(startOfToday),
+        date: MoreThanOrEqual(startDate),
         is_cancelled: false,
       },
     });
@@ -70,10 +76,6 @@ export class BookingsService {
       throw new ConflictException(
         'Managers can only have 30 active bookings at a time',
       );
-    }
-
-    if (existingBooking) {
-      throw new ConflictException('Parking spot already booked for this date');
     }
 
     const booking = new Booking();
@@ -126,7 +128,7 @@ export class BookingsService {
   @Cron('0 11 * * *')
   async verifyCheckIn() {
     const today = new Date();
-    today.setHours(23, 59, 0);
+    today.setHours(23, 59, 59);
 
     console.log('Running cron job to verify check-ins at', new Date());
 

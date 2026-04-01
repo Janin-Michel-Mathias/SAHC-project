@@ -1,10 +1,12 @@
 "use client"
 
 import { Button } from "@/components/ui/button";
+import { useSearchParams } from "next/navigation";
 import { SubmitEvent, useState } from "react";
 import { login } from "@/services";
 
 function Login() {
+    const searchParams = useSearchParams();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [isLoading, setIsLoading] = useState(false);
@@ -19,7 +21,9 @@ function Login() {
             const data = await login(email, password);
             localStorage.setItem("token", data.accessToken);
             localStorage.setItem("userId", JSON.stringify(data.id));
-            window.location.href = "/dashboard";
+            const redirect = searchParams.get("redirect");
+            const redirectTo = redirect && redirect.startsWith("/") ? redirect : "/dashboard";
+            window.location.href = redirectTo;
         } catch (err) {
             setError(err instanceof Error ? err.message : "Une erreur s'est produite");
         } finally {

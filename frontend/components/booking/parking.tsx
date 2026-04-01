@@ -1,5 +1,4 @@
 import ParkingSpot from "@/components/booking/parkingSpot";
-import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { ParkingSpotProps } from "@/types";
 import { bookParkingSpot, cancelParkingSpot, getParkingSpots } from "@/services";

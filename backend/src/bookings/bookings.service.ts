@@ -82,4 +82,24 @@ export class BookingsService {
 
     return this.bookingRepository.save(booking);
   }
+
+  async cancel(idBooking: number, userId: number) {
+    const booking = await this.bookingRepository.findOne({
+      where: { id: idBooking },
+      relations: ['user'],
+    });
+
+    if (!booking) {
+      throw new NotFoundException('Booking not found');
+    }
+
+    if (booking.user.id !== userId) {
+      throw new ConflictException('You can only cancel your own bookings');
+    }
+
+    booking.is_cancelled = true;
+    booking.cancelled_at = new Date();
+    booking.cancelled_by = booking.user;
+    return this.bookingRepository.save(booking);
+  }
 }

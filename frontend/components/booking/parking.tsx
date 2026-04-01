@@ -1,6 +1,8 @@
-import ParkingSpot, { ParkingSpotProps } from "@/components/booking/parkingSpot";
+import ParkingSpot from "@/components/booking/parkingSpot";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
+import { ParkingSpotProps } from "@/types";
+import { bookParkingSpot, getParkingSpots } from "@/services";
 
 function Parking() {
     const [date, setDate] = useState(new Date());
@@ -12,9 +14,7 @@ function Parking() {
 
 
     useEffect(() => {
-        fetch(process.env.NEXT_PUBLIC_API_URL + "bookings?date=" + date.toISOString())
-            .then(response => response.json())
-            .then(data => setParkingSpots(data));
+        getParkingSpots(date).then(setParkingSpots);
     }, [date]);
 
     const closeModal = () => {
@@ -23,7 +23,7 @@ function Parking() {
     };
 
     const openModal = (spot: ParkingSpotProps) => {
-        if (spot.isBooked) {
+        if (spot.bookedBy !== null) {
             return;
         }
 
@@ -32,27 +32,13 @@ function Parking() {
     };
 
     const bookSpot = async (spot: ParkingSpotProps, range: number) => {
-        const result = await fetch(process.env.NEXT_PUBLIC_API_URL + "bookings", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                userId: 1,
-                date: date,
-                parkingSpotId: spot.id
-            })
-        });
-
-        if (result.ok) {
-            alert("Réservation réussie !");
+        try {
+            await bookParkingSpot(date, spot.id);
+            const updatedSpots = await getParkingSpots(date);
+            setParkingSpots(updatedSpots);
             closeModal();
-            // Rafraîchir les places de parking
-            fetch(process.env.NEXT_PUBLIC_API_URL + "bookings?date=" + date.toISOString())
-                .then(response => response.json())
-                .then(data => setParkingSpots(data));
-        } else {
-            alert("Erreur lors de la réservation. Veuillez réessayer.");
+        } catch (err) {
+            alert(err instanceof Error ? err.message : "Une erreur s'est produite");
         }
     };
 

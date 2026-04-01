@@ -1,11 +1,11 @@
 "use client"
 
-import Parking from "@/components/booking/parking";
+import Login from "@/components/user/login/Login";
 
 export default function Page() {
   return (
-    <div className="flex min-h-svh p-6">
-      <Parking />
+    <div className="grid min-h-svh place-items-center p-6">
+      <Login />
     </div>
   )
 }

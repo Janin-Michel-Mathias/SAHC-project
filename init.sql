@@ -21,3 +21,9 @@ SELECT row, col, is_electric FROM (VALUES
   ('F', '06', true),  ('F', '07', true),  ('F', '08', true),  ('F', '09', true),  ('F', '10', true)
 ) AS data(row, col, is_electric)
 WHERE NOT EXISTS (SELECT 1 FROM parking_spot LIMIT 1);
+
+INSERT INTO user (email, password, first_name, last_name, role)
+SELECT email, password, first_name, last_name, role FROM (VALUES
+  ('test@gmail.com', '$2a$12$fEGb3HfVXQcUOp5BXMWHlOTkedCLgwME1H6RRL4ec4wPTEYsaesYS', 'Test', 'User', 'employee')
+) AS data(email, password, first_name, last_name, role)
+WHERE NOT EXISTS (SELECT 1 FROM user LIMIT 1);

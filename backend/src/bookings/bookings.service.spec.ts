@@ -229,4 +229,56 @@ describe('BookingsService', () => {
     await expect(service.create(dto, 10)).resolves.toEqual(savedBooking);
     expect(mockBookingRepository.save).toHaveBeenCalled();
   });
+
+  it('cancels a booking', async () => {
+    const booking = {
+      id: 50,
+      is_cancelled: false,
+      user: { id: 10 },
+    };
+
+    mockBookingRepository.findOne.mockResolvedValue(booking);
+    mockBookingRepository.save.mockResolvedValue({
+      ...booking,
+      is_cancelled: true,
+    });
+
+    const result = await service.cancel(50, 10);
+
+    expect(mockBookingRepository.findOne).toHaveBeenCalledWith({
+      where: { id: 50 },
+      relations: ['user'],
+    });
+    expect(mockBookingRepository.save).toHaveBeenCalledWith({
+      ...booking,
+      is_cancelled: true,
+    });
+    expect(result.is_cancelled).toEqual(true);
+  });
+
+  it('throws when trying to cancel a non-existent booking', async () => {
+    mockBookingRepository.findOne.mockResolvedValue(null);
+
+    await expect(service.cancel(999, 10)).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
+    await expect(service.cancel(999, 10)).rejects.toThrow('Booking not found');
+  });
+
+  it('throws when trying to cancel a booking that belongs to another user', async () => {
+    const booking = {
+      id: 50,
+      is_cancelled: false,
+      user: { id: 20 },
+    };
+
+    mockBookingRepository.findOne.mockResolvedValue(booking);
+
+    await expect(service.cancel(50, 10)).rejects.toBeInstanceOf(
+      ConflictException,
+    );
+    await expect(service.cancel(50, 10)).rejects.toThrow(
+      'You can only cancel your own bookings',
+    );
+  });
 });

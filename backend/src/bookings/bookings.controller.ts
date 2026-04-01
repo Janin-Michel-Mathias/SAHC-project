@@ -1,4 +1,11 @@
-import { Controller, Post, Body, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  UseGuards,
+  Delete,
+  Param,
+} from '@nestjs/common';
 import { BookingsService } from './bookings.service';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { AuthGuard } from '../auth/auth.guard';
@@ -15,5 +22,11 @@ export class BookingsController {
     @CurrentUser() user: JwtPayload,
   ) {
     return this.bookingsService.create(createBookingDto, user.sub);
+  }
+
+  @Delete(':id')
+  @UseGuards(AuthGuard)
+  cancel(@Param('id') idBooking: string, @CurrentUser() user: JwtPayload) {
+    return this.bookingsService.cancel(Number(idBooking), user.sub);
   }
 }

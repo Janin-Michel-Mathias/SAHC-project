@@ -144,6 +144,25 @@ export class BookingsService {
     return this.bookingRepository.save(booking);
   }
 
+  async selfBookings(userId: number, userRole: string) {
+    const today = new Date();
+    today.setHours(0, 0, 0);
+
+    const bookings = await this.bookingRepository.find({
+      where: {
+        user: { id: userId },
+        date: MoreThanOrEqual(today),
+        is_cancelled: false,
+      },
+      relations: ['parking_spot'],
+    });
+
+    const totalBookings = userRole === 'manager' ? 30 : 5;
+    const remainingBookings = totalBookings - bookings.length;
+
+    return { remainingBookings: remainingBookings, bookings: bookings };
+  }
+
   @Cron('0 11 * * *')
   async verifyCheckIn() {
     const today = new Date();

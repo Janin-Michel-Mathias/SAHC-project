@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ParkingSpotProps } from "@/types";
+import { CalendarClock, PlugZap, XCircle } from "lucide-react";
 
 type BookingModalProps = {
     selectedSpot: ParkingSpotProps;
@@ -12,8 +13,6 @@ type BookingModalProps = {
 
 function BookingModal({
     selectedSpot,
-    reservationDays,
-    setReservationDays,
     mode,
     onClose,
     onConfirm,
@@ -22,7 +21,7 @@ function BookingModal({
 
     return (
         <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm"
             onClick={onClose}
             role="button"
             tabIndex={0}
@@ -33,52 +32,38 @@ function BookingModal({
             }}
         >
             <div
-                className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl"
+                className="w-full max-w-md rounded-3xl border border-white/70 bg-white/95 p-6 shadow-2xl shadow-slate-950/20"
                 onClick={(event) => event.stopPropagation()}
             >
-                <h2 className="mb-2 text-xl font-semibold">
-                    {isCancelMode
-                        ? `Annuler la réservation ${selectedSpot.row}${selectedSpot.column}`
-                        : `Réserver la place ${selectedSpot.row}${selectedSpot.column}`}
-                </h2>
-                <p className="mb-6 text-sm text-gray-600">
+                <div className="mb-6 space-y-3">
+                    <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-600">
+                        {isCancelMode ? <XCircle className="size-3.5" /> : <CalendarClock className="size-3.5" />}
+                        {isCancelMode ? "Annulation" : "Réservation"}
+                    </div>
+                    <h2 className="text-2xl font-semibold tracking-tight text-slate-950">
+                        {isCancelMode
+                            ? `Annuler la réservation ${selectedSpot.row}${selectedSpot.column}`
+                            : `Réserver la place ${selectedSpot.row}${selectedSpot.column}`}
+                    </h2>
+                    <p className="text-sm leading-6 text-slate-600">
+                        Place sélectionnée: <span className="font-medium text-slate-900">{selectedSpot.row}{selectedSpot.column}</span>
+                        {selectedSpot.isElectric && (
+                            <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700">
+                                <PlugZap className="size-3" />
+                                Électrique
+                            </span>
+                        )}
+                    </p>
+                </div>
+
+                <p className="mb-6 text-sm text-slate-600">
                     {isCancelMode
                         ? "Cette place est réservée par vous. Voulez-vous annuler cette réservation ?"
-                        : "Choisissez la durée de réservation (en jours)."}
+                        : "Confirmez-vous la réservation de cette place ?"}
                 </p>
 
-                {!isCancelMode && (
-                    <div className="mb-6 flex items-center gap-3">
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => setReservationDays((current) => Math.max(1, current - 1))}
-                        >
-                            -
-                        </Button>
-                        <input
-                            type="number"
-                            min={1}
-                            value={reservationDays}
-                            onChange={(event) => {
-                                const nextValue = Number(event.target.value);
-                                setReservationDays(Number.isNaN(nextValue) ? 1 : Math.max(1, nextValue));
-                            }}
-                            className="h-8 w-20 rounded-md border border-gray-300 px-2 text-center text-black"
-                        />
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => setReservationDays((current) => current + 1)}
-                        >
-                            +
-                        </Button>
-                        <span className="text-sm text-gray-700">jour(s)</span>
-                    </div>
-                )}
-
                 <div className="flex justify-end gap-2">
-                    <Button type="button" variant="outline" onClick={onClose}>Annuler</Button>
+                    <Button type="button" variant="outline" onClick={onClose} className="rounded-xl">Annuler</Button>
                     <Button type="button" variant={isCancelMode ? "destructive" : "default"} onClick={onConfirm}>
                         {isCancelMode ? "Confirmer l'annulation" : "Valider"}
                     </Button>

@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { Between } from 'typeorm';
+import { Between, IsNull } from 'typeorm';
 import { StatisticsService } from './statistics.service';
 
 describe('StatisticsService', () => {
@@ -87,7 +87,7 @@ describe('StatisticsService', () => {
     bookingRepositoryMock.find.mockResolvedValue(bookings);
     parkingSpotRepositoryMock.find.mockResolvedValue(parkingSpots);
 
-    const result = await service.fetchStatistics(startDate, endDate);
+    const result = await service.fetchBookingStatistics(startDate, endDate);
 
     expect(bookingRepositoryMock.find).toHaveBeenCalledWith({
       where: {
@@ -137,7 +137,7 @@ describe('StatisticsService', () => {
     bookingRepositoryMock.find.mockResolvedValue([]);
     parkingSpotRepositoryMock.find.mockResolvedValue([]);
 
-    const result = await service.fetchStatistics(
+    const result = await service.fetchBookingStatistics(
       new Date('2026-04-01T00:00:00.000Z'),
       new Date('2026-04-02T00:00:00.000Z'),
     );
@@ -151,6 +151,62 @@ describe('StatisticsService', () => {
       cancelledBookings: 0,
       usedElectricSpots: 0,
       spotsUsage: [],
+    });
+  });
+
+  it('returns all active users even if they have no bookings', async () => {
+    const startDate = new Date('2026-04-01T00:00:00.000Z');
+    const endDate = new Date('2026-04-02T00:00:00.000Z');
+
+    const expectedStartDate = new Date('2026-04-01T00:00:00.000Z');
+    const expectedEndDate = new Date('2026-04-02T23:59:59.000Z');
+
+    userRepositoryMock.find.mockResolvedValue([
+      { id: 1, email: 'user1@test.com' },
+      { id: 2, email: 'user2@test.com' },
+    ]);
+
+    bookingRepositoryMock.find.mockResolvedValue([
+      {
+        id: 1,
+        date: new Date('2026-04-01T10:00:00.000Z'),
+        has_checked_in: true,
+        is_cancelled: false,
+        cancelled_at: null,
+        cancelled_by: null,
+        user: { id: 1, email: 'user1@test.com' },
+      },
+    ]);
+
+    const result = await service.fetchUserStatistics(startDate, endDate);
+
+    expect(userRepositoryMock.find).toHaveBeenCalledWith({
+      where: {
+        deleted_at: IsNull(),
+      },
+    });
+
+    expect(result).toEqual({
+      startDate: expectedStartDate,
+      endDate: expectedEndDate,
+      users: [
+        {
+          userId: 1,
+          email: 'user1@test.com',
+          totalBookings: 1,
+          checkedInBookings: 1,
+          nonCheckedInBookings: 0,
+          cancelledBookings: 0,
+        },
+        {
+          userId: 2,
+          email: 'user2@test.com',
+          totalBookings: 0,
+          checkedInBookings: 0,
+          nonCheckedInBookings: 0,
+          cancelledBookings: 0,
+        },
+      ],
     });
   });
 });

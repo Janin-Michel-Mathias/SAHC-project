@@ -6,12 +6,21 @@ import { AuthGuard } from 'src/auth/auth.guard';
 export class StatisticsController {
   constructor(private readonly statisticsService: StatisticsService) {}
 
-  @Get()
+  @Get('booking-stats')
   @UseGuards(AuthGuard('manager'))
   getStatistics(
     @Query('startDate') startDate: Date,
     @Query('endDate') endDate: Date,
   ) {
-    return this.statisticsService.fetchStatistics(startDate, endDate);
+    return this.statisticsService.fetchBookingStatistics(startDate, endDate);
+  }
+
+  @Get('user-stats')
+  @UseGuards(AuthGuard('manager'))
+  getUserStatistics(
+    @Query('startDate') startDate: Date,
+    @Query('endDate') endDate: Date,
+  ) {
+    return this.statisticsService.fetchUserStatistics(startDate, endDate);
   }
 }

@@ -7,6 +7,7 @@ import {
   Patch,
   Param,
   HttpCode,
+  Get,
 } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { CreateBookingDto } from './dto/create-booking.dto';
@@ -17,6 +18,18 @@ import { CreateUserDto } from './dto/create-user.dto';
 @Controller('admin')
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
+
+  @Get('bookings')
+  @UseGuards(AuthGuard('secretary'))
+  findAllBookings() {
+    return this.adminService.findAllBookings();
+  }
+
+  @Get('users')
+  @UseGuards(AuthGuard('secretary'))
+  findAllUsers() {
+    return this.adminService.findAllUsers();
+  }
 
   @Post('bookings')
   @UseGuards(AuthGuard('secretary'))

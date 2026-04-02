@@ -25,6 +25,23 @@ export class AdminService {
     private authService: AuthService,
   ) {}
 
+  async findAllBookings() {
+    return this.bookingRepository.find({
+      relations: ['user', 'parking_spot', 'cancelled_by'],
+      order: {
+        created_at: 'DESC',
+      },
+    });
+  }
+
+  async findAllUsers() {
+    return this.userRepository.find({
+      order: {
+        created_at: 'DESC',
+      },
+    });
+  }
+
   async createBooking(createBookingDto: CreateBookingDto) {
     const user = await this.userRepository.findOneBy({
       id: createBookingDto.userId,

@@ -3,7 +3,7 @@ import { User } from "../user";
 export type ParkingSpotProps = {
     id: number;
     row: string;
-    column: string;
+    col: string;
     isElectric: boolean;
     bookingId: number | null;
     bookedBy: User | null;

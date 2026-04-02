@@ -21,8 +21,13 @@ function Login() {
             const data = await login(email, password);
             localStorage.setItem("token", data.accessToken);
             localStorage.setItem("userId", JSON.stringify(data.id));
+            localStorage.setItem("userRole", data.role);
             const redirect = searchParams.get("redirect");
-            const redirectTo = redirect && redirect.startsWith("/") ? redirect : "/dashboard";
+            const redirectTo = redirect && redirect.startsWith("/")
+                ? redirect
+                : data.role === "secretary"
+                    ? "/admin"
+                    : "/booking";
             window.location.href = redirectTo;
         } catch (err) {
             setError(err instanceof Error ? err.message : "Une erreur s'est produite");

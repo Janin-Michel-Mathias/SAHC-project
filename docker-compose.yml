@@ -21,6 +21,8 @@ services:
       POSTGRES_PASSWORD: Respons11
       POSTGRES_DB: sahc
       POSTGRES_PORT: 5432
+      MAILING_USER: ascodeinfrastructure766@gmail.com
+      MAILING_PASSWORD: insm bbto pbqk mhix
     ports:
       - "3000:3000"
     depends_on:

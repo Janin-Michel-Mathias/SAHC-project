@@ -86,7 +86,7 @@ export function AdminBookingsTab({ bookings, onCreate, onEdit, onDelete }: Admin
                                 {bookings.map((booking) => (
                                     <tr key={booking.id} className={booking.is_cancelled ? "bg-slate-50/60 text-slate-500" : ""}>
                                         <td className="px-4 py-3 font-medium text-slate-900">#{booking.id}</td>
-                                        <td className="px-4 py-3">{formatDate(booking.date)}</td>
+                                        <td className="px-4 py-3 text-slate-900">{formatDate(booking.date)}</td>
                                         <td className="px-4 py-3">
                                             <div className="font-medium text-slate-900">
                                                 {booking.user.first_name} {booking.user.last_name}

@@ -5,9 +5,17 @@ import { Injectable } from '@nestjs/common';
 import nodemailer, { Transporter } from 'nodemailer';
 import SMTPTransport from 'nodemailer/lib/smtp-transport';
 
+type QueuedMail = {
+  to: string;
+  subject: string;
+  html: string;
+};
+
 @Injectable()
 export class MailerService {
   private transporter!: Transporter<SMTPTransport.SentMessageInfo>;
+  private readonly mailQueue: QueuedMail[] = [];
+  private isProcessingQueue = false;
 
   constructor() {
     this.initTransporter();
@@ -38,7 +46,38 @@ export class MailerService {
     });
   }
 
-  async sendConfirmationEmail(
+  private enqueueMail(to: string, subject: string, html: string) {
+    this.mailQueue.push({ to, subject, html });
+    void this.processQueue();
+  }
+
+  private async processQueue() {
+    if (this.isProcessingQueue) {
+      return;
+    }
+
+    this.isProcessingQueue = true;
+
+    try {
+      while (this.mailQueue.length > 0) {
+        const queuedMail = this.mailQueue.shift();
+
+        if (!queuedMail) {
+          continue;
+        }
+
+        await this.sendMail(queuedMail.to, queuedMail.subject, queuedMail.html);
+      }
+    } finally {
+      this.isProcessingQueue = false;
+
+      if (this.mailQueue.length > 0) {
+        void this.processQueue();
+      }
+    }
+  }
+
+  sendConfirmationEmail(
     to: string,
     bookingDate: Date,
     parkingSpot: string,
@@ -68,10 +107,10 @@ export class MailerService {
       </div>
     `;
 
-    await this.sendMail(to, 'Validation de votre réservation de parking', html);
+    this.enqueueMail(to, 'Validation de votre réservation de parking', html);
   }
 
-  async sendCancellationEmail(
+  sendCancellationEmail(
     to: string,
     bookingDate: Date,
     parkingSpot: string,
@@ -99,6 +138,6 @@ export class MailerService {
       </div>
     `;
 
-    await this.sendMail(to, 'Annulation de votre réservation de parking', html);
+    this.enqueueMail(to, 'Annulation de votre réservation de parking', html);
   }
 }

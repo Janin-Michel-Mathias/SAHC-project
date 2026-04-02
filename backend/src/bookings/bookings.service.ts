@@ -85,15 +85,15 @@ export class BookingsService {
     booking.user = user;
     booking.parking_spot = parkingSpot;
 
-    return this.bookingRepository.save(booking).then(async () => {
-      await this.mailerService.sendConfirmationEmail(
-        user.email!,
-        booking.date,
-        `${parkingSpot.row}${parkingSpot.col}`,
-        parkingSpot.is_electric,
-      );
-      return booking;
-    });
+    await this.bookingRepository.save(booking);
+    void this.mailerService.sendConfirmationEmail(
+      user.email!,
+      booking.date,
+      `${parkingSpot.row}${parkingSpot.col}`,
+      parkingSpot.is_electric,
+    );
+
+    return booking;
   }
 
   async cancel(idBooking: number, userId: number) {
@@ -113,15 +113,16 @@ export class BookingsService {
     booking.is_cancelled = true;
     booking.cancelled_at = new Date();
     booking.cancelled_by = booking.user;
-    return this.bookingRepository.save(booking).then(async () => {
-      await this.mailerService.sendCancellationEmail(
-        booking.user.email!,
-        booking.date,
-        `${booking.parking_spot.row}${booking.parking_spot.col}`,
-        booking.parking_spot.is_electric,
-      );
-      return booking;
-    });
+
+    await this.bookingRepository.save(booking);
+    void this.mailerService.sendCancellationEmail(
+      booking.user.email!,
+      booking.date,
+      `${booking.parking_spot.row}${booking.parking_spot.col}`,
+      booking.parking_spot.is_electric,
+    );
+
+    return booking;
   }
 
   async checkIn(idBooking: number, userId: number) {
@@ -160,14 +161,13 @@ export class BookingsService {
       booking.has_checked_in = false;
       booking.is_cancelled = true;
       booking.cancelled_at = new Date();
-      await this.bookingRepository.save(booking).then(async () => {
-        await this.mailerService.sendCancellationEmail(
-          booking.user.email!,
-          booking.date,
-          `${booking.parking_spot.row}${booking.parking_spot.col}`,
-          booking.parking_spot.is_electric,
-        );
-      });
+      await this.bookingRepository.save(booking);
+      void this.mailerService.sendCancellationEmail(
+        booking.user.email!,
+        booking.date,
+        `${booking.parking_spot.row}${booking.parking_spot.col}`,
+        booking.parking_spot.is_electric,
+      );
     }
   }
 }

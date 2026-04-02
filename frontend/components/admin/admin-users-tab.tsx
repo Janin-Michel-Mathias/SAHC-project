@@ -92,7 +92,7 @@ export function AdminUsersTab({ users, onCreate, onEdit, onDelete }: AdminUsersT
                                             </div>
                                             <div className="text-xs text-slate-500">{user.email ?? "Compte supprimé"}</div>
                                         </td>
-                                        <td className="px-4 py-3">{roleLabel[user.role] ?? user.role}</td>
+                                        <td className="px-4 py-3 text-slate-500">{roleLabel[user.role] ?? user.role}</td>
                                         <td className="px-4 py-3">
                                             <span
                                                 className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${user.deleted_at ? "bg-slate-200 text-slate-700" : "bg-emerald-100 text-emerald-700"}`}

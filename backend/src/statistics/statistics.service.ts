@@ -1,7 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Booking } from '../bookings/entities/booking.entity';
 import { ParkingSpot } from '../parking-spots/entities/parkingSpots.entity';
-import { User } from '../users/entities/user.entity';
 import { Between, Repository } from 'typeorm';
 
 @Injectable()
@@ -11,8 +10,6 @@ export class StatisticsService {
     private parkingSpotRepository: Repository<ParkingSpot>,
     @Inject('BOOKING_REPOSITORY')
     private bookingRepository: Repository<Booking>,
-    @Inject('USER_REPOSITORY')
-    private userRepository: Repository<User>,
   ) {}
 
   async fetchStatistics(startDate: Date, endDate: Date) {

@@ -304,10 +304,14 @@ describe('BookingsService', () => {
       checked_in_at: new Date(),
     });
 
-    const result = await service.checkIn(60, 10);
+    const result = await service.checkIn('A10', 10);
 
     expect(mockBookingRepository.findOne).toHaveBeenCalledWith({
-      where: { id: 60 },
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      where: expect.objectContaining({
+        parking_spot: { row: 'A', col: '10' },
+        is_cancelled: false,
+      }),
       relations: ['user'],
     });
     expect(mockBookingRepository.save).toHaveBeenCalledWith({
@@ -322,10 +326,12 @@ describe('BookingsService', () => {
   it('throws when trying to check in to a non-existent booking', async () => {
     mockBookingRepository.findOne.mockResolvedValue(null);
 
-    await expect(service.checkIn(999, 10)).rejects.toBeInstanceOf(
+    await expect(service.checkIn('A99', 10)).rejects.toBeInstanceOf(
       NotFoundException,
     );
-    await expect(service.checkIn(999, 10)).rejects.toThrow('Booking not found');
+    await expect(service.checkIn('A99', 10)).rejects.toThrow(
+      'Booking not found',
+    );
   });
 
   it('throws when trying to check in to a booking that belongs to another user', async () => {
@@ -337,10 +343,10 @@ describe('BookingsService', () => {
 
     mockBookingRepository.findOne.mockResolvedValue(booking);
 
-    await expect(service.checkIn(60, 10)).rejects.toBeInstanceOf(
+    await expect(service.checkIn('B12', 10)).rejects.toBeInstanceOf(
       ConflictException,
     );
-    await expect(service.checkIn(60, 10)).rejects.toThrow(
+    await expect(service.checkIn('B12', 10)).rejects.toThrow(
       'You can only check in to your own bookings',
     );
   });

@@ -32,11 +32,11 @@ export class BookingsController {
     return this.bookingsService.cancel(Number(idBooking), user.sub);
   }
 
-  @Post(':id/check-in')
+  @Post(':spot/check-in')
   @UseGuards(AuthGuard())
   @HttpCode(200)
-  checkIn(@Param('id') idBooking: string, @CurrentUser() user: JwtPayload) {
-    return this.bookingsService.checkIn(Number(idBooking), user.sub);
+  checkIn(@Param('spot') spot: string, @CurrentUser() user: JwtPayload) {
+    return this.bookingsService.checkIn(spot, user.sub);
   }
 
   @Get('self')

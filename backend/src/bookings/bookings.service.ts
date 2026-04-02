@@ -125,9 +125,21 @@ export class BookingsService {
     return booking;
   }
 
-  async checkIn(idBooking: number, userId: number) {
+  async checkIn(spot: string, userId: number) {
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0);
+    const todayEnd = new Date();
+    todayEnd.setHours(23, 59, 59);
+
+    const row = spot.charAt(0);
+    const col = spot.slice(1);
+
     const booking = await this.bookingRepository.findOne({
-      where: { id: idBooking },
+      where: {
+        date: Between(todayStart, todayEnd),
+        parking_spot: { row: row, col: col },
+        is_cancelled: false,
+      },
       relations: ['user'],
     });
 

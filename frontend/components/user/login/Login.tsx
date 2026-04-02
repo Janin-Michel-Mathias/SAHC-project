@@ -27,6 +27,8 @@ function Login() {
                 ? redirect
                 : data.role === "secretary"
                     ? "/admin"
+                    : data.role === "manager"
+                        ? "/dashboard"
                     : "/booking";
             window.location.href = redirectTo;
         } catch (err) {

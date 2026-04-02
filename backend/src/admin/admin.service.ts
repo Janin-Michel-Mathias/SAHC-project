@@ -99,8 +99,6 @@ export class AdminService {
         throw new NotFoundException('Parking spot not found');
       }
 
-      console.log(updateData.date, booking.date);
-
       const startOfDay = new Date(updateData.date || booking.date);
       const endOfDay = new Date(updateData.date || booking.date);
       startOfDay.setHours(0, 0, 0);

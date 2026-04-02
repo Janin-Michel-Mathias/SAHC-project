@@ -130,8 +130,6 @@ export class BookingsService {
     const today = new Date();
     today.setHours(23, 59, 59);
 
-    console.log('Running cron job to verify check-ins at', new Date());
-
     const bookingsToCancel = await this.bookingRepository.find({
       where: {
         date: LessThanOrEqual(today),

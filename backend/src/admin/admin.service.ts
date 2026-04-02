@@ -12,6 +12,7 @@ import { ParkingSpot } from '../parking-spots/entities/parkingSpots.entity';
 import { UpdateBookingDto } from './dto/update-booking.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { AuthService } from '../auth/auth.service';
+import { MailerService } from '../mailer/mailer.service';
 
 @Injectable()
 export class AdminService {
@@ -23,6 +24,7 @@ export class AdminService {
     @Inject('USER_REPOSITORY')
     private userRepository: Repository<User>,
     private authService: AuthService,
+    private mailerService: MailerService,
   ) {}
 
   async findAllBookings() {
@@ -80,7 +82,15 @@ export class AdminService {
     booking.user = user;
     booking.parking_spot = parkingSpot;
 
-    return this.bookingRepository.save(booking);
+    return this.bookingRepository.save(booking).then(async () => {
+      await this.mailerService.sendConfirmationEmail(
+        user.email!,
+        booking.date,
+        `${parkingSpot.row}${parkingSpot.col}`,
+        parkingSpot.is_electric,
+      );
+      return booking;
+    });
   }
 
   async cancelBooking(bookingId: number) {
@@ -93,7 +103,15 @@ export class AdminService {
     booking.is_cancelled = true;
     booking.cancelled_at = new Date();
 
-    return this.bookingRepository.save(booking);
+    return this.bookingRepository.save(booking).then(async () => {
+      await this.mailerService.sendCancellationEmail(
+        booking.user.email!,
+        booking.date,
+        `${booking.parking_spot.row}${booking.parking_spot.col}`,
+        booking.parking_spot.is_electric,
+      );
+      return booking;
+    });
   }
 
   async updateBooking(bookingId: number, updateData: UpdateBookingDto) {

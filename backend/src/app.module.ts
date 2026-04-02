@@ -6,6 +6,7 @@ import { databaseProviders } from './database.providers';
 import { AuthModule } from './auth/auth.module';
 import { ParkingSpotsModule } from './parking-spots/parking-spots.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { MailerService } from './mailer/mailer.service.js';
 
 @Module({
   imports: [
@@ -17,7 +18,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     ScheduleModule.forRoot(),
   ],
   controllers: [],
-  providers: [...databaseProviders],
+  providers: [...databaseProviders, MailerService],
   exports: [...databaseProviders],
 })
 export class AppModule {}

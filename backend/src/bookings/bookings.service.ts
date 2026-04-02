@@ -10,6 +10,7 @@ import { ParkingSpot } from '../parking-spots/entities/parkingSpots.entity';
 import { Booking } from './entities/booking.entity';
 import { User } from 'src/users/entities/user.entity';
 import { Cron } from '@nestjs/schedule';
+import { MailerService } from '../mailer/mailer.service';
 
 @Injectable()
 export class BookingsService {
@@ -20,6 +21,7 @@ export class BookingsService {
     private bookingRepository: Repository<Booking>,
     @Inject('USER_REPOSITORY')
     private userRepository: Repository<User>,
+    private mailerService: MailerService,
   ) {}
 
   async create(createBookingDto: CreateBookingDto, userId: number) {
@@ -83,7 +85,15 @@ export class BookingsService {
     booking.user = user;
     booking.parking_spot = parkingSpot;
 
-    return this.bookingRepository.save(booking);
+    return this.bookingRepository.save(booking).then(async () => {
+      await this.mailerService.sendConfirmationEmail(
+        user.email!,
+        booking.date,
+        `${parkingSpot.row}${parkingSpot.col}`,
+        parkingSpot.is_electric,
+      );
+      return booking;
+    });
   }
 
   async cancel(idBooking: number, userId: number) {
@@ -103,7 +113,15 @@ export class BookingsService {
     booking.is_cancelled = true;
     booking.cancelled_at = new Date();
     booking.cancelled_by = booking.user;
-    return this.bookingRepository.save(booking);
+    return this.bookingRepository.save(booking).then(async () => {
+      await this.mailerService.sendCancellationEmail(
+        booking.user.email!,
+        booking.date,
+        `${booking.parking_spot.row}${booking.parking_spot.col}`,
+        booking.parking_spot.is_electric,
+      );
+      return booking;
+    });
   }
 
   async checkIn(idBooking: number, userId: number) {
@@ -142,7 +160,14 @@ export class BookingsService {
       booking.has_checked_in = false;
       booking.is_cancelled = true;
       booking.cancelled_at = new Date();
-      await this.bookingRepository.save(booking);
+      await this.bookingRepository.save(booking).then(async () => {
+        await this.mailerService.sendCancellationEmail(
+          booking.user.email!,
+          booking.date,
+          `${booking.parking_spot.row}${booking.parking_spot.col}`,
+          booking.parking_spot.is_electric,
+        );
+      });
     }
   }
 }

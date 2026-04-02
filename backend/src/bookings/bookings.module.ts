@@ -6,6 +6,7 @@ import { bookingProviders } from './bookings.providers';
 import { databaseProviders } from '../database.providers';
 import { AuthModule } from 'src/auth/auth.module';
 import { userProviders } from 'src/users/users.providers';
+import { MailerService } from '../mailer/mailer.service';
 @Module({
   imports: [AuthModule],
   controllers: [BookingsController],
@@ -15,6 +16,7 @@ import { userProviders } from 'src/users/users.providers';
     ...parkingSpotProviders,
     ...bookingProviders,
     ...userProviders,
+    MailerService,
   ],
   exports: [BookingsService],
 })

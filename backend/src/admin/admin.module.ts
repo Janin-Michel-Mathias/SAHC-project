@@ -7,6 +7,7 @@ import { parkingSpotProviders } from 'src/parking-spots/parking-spots.providers'
 import { AuthModule } from 'src/auth/auth.module';
 import { databaseProviders } from 'src/database.providers';
 import { AuthService } from 'src/auth/auth.service';
+import { MailerService } from '../mailer/mailer.service';
 
 @Module({
   imports: [AuthModule],
@@ -18,6 +19,7 @@ import { AuthService } from 'src/auth/auth.service';
     ...bookingProviders,
     ...userProviders,
     AuthService,
+    MailerService,
   ],
   exports: [AdminService],
 })

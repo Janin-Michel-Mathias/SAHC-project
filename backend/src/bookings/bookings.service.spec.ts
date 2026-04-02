@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { BookingsService } from './bookings.service';
 import { ConflictException, NotFoundException } from '@nestjs/common';
+import { MailerService } from '../mailer/mailer.service';
 
 describe('BookingsService', () => {
   let service: BookingsService;
@@ -28,6 +29,11 @@ describe('BookingsService', () => {
     createQueryBuilder: jest.fn(),
   };
 
+  const mockMailerService = {
+    sendConfirmationEmail: jest.fn(),
+    sendCancellationEmail: jest.fn(),
+  };
+
   beforeEach(async () => {
     queryBuilder = {
       leftJoinAndSelect: jest.fn().mockReturnThis(),
@@ -53,6 +59,10 @@ describe('BookingsService', () => {
           provide: 'BOOKING_REPOSITORY',
           useValue: mockBookingRepository,
         },
+        {
+          provide: MailerService,
+          useValue: mockMailerService,
+        },
       ],
     }).compile();
 
@@ -72,7 +82,6 @@ describe('BookingsService', () => {
     const user = { id: 10, email: 'user@test.com' };
     const parkingSpot = { id: 2, row: 1, col: 3, is_electric: true };
     const savedBooking = {
-      id: 99,
       date: dto.date,
       user,
       parking_spot: parkingSpot,
@@ -89,7 +98,7 @@ describe('BookingsService', () => {
     expect(mockUserRepository.findOneBy).toHaveBeenCalledWith({ id: 10 });
     expect(mockParkingSpotRepository.findOneBy).toHaveBeenCalledWith({ id: 2 });
     expect(mockBookingRepository.save).toHaveBeenCalled();
-    expect(result).toEqual(savedBooking);
+    expect(result).toMatchObject(savedBooking);
   });
 
   it('throws when user is not found', async () => {
@@ -176,7 +185,6 @@ describe('BookingsService', () => {
     const user = { id: 10, role: 'employee' };
     const parkingSpot = { id: 2 };
     const savedBooking = {
-      id: 100,
       date: dto.date,
       user,
       parking_spot: parkingSpot,
@@ -188,7 +196,7 @@ describe('BookingsService', () => {
     mockBookingRepository.count.mockResolvedValue(4);
     mockBookingRepository.save.mockResolvedValue(savedBooking);
 
-    await expect(service.create(dto, 10)).resolves.toEqual(savedBooking);
+    await expect(service.create(dto, 10)).resolves.toMatchObject(savedBooking);
     expect(mockBookingRepository.save).toHaveBeenCalled();
   });
 
@@ -214,7 +222,6 @@ describe('BookingsService', () => {
     const user = { id: 10, role: 'manager' };
     const parkingSpot = { id: 2 };
     const savedBooking = {
-      id: 101,
       date: dto.date,
       user,
       parking_spot: parkingSpot,
@@ -226,7 +233,7 @@ describe('BookingsService', () => {
     mockBookingRepository.count.mockResolvedValue(29);
     mockBookingRepository.save.mockResolvedValue(savedBooking);
 
-    await expect(service.create(dto, 10)).resolves.toEqual(savedBooking);
+    await expect(service.create(dto, 10)).resolves.toMatchObject(savedBooking);
     expect(mockBookingRepository.save).toHaveBeenCalled();
   });
 
@@ -234,7 +241,8 @@ describe('BookingsService', () => {
     const booking = {
       id: 50,
       is_cancelled: false,
-      user: { id: 10 },
+      user: { id: 10, email: 'user@test.com' },
+      parking_spot: { row: 1, col: 3, is_electric: true },
     };
 
     mockBookingRepository.findOne.mockResolvedValue(booking);

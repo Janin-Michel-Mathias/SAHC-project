@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { AuthService } from '../auth/auth.service';
+import { MailerService } from '../mailer/mailer.service';
 
 describe('AdminService', () => {
   let service: AdminService;
@@ -25,6 +26,11 @@ describe('AdminService', () => {
     register: jest.fn(),
   };
 
+  const mockMailerService = {
+    sendConfirmationEmail: jest.fn(),
+    sendCancellationEmail: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -44,6 +50,10 @@ describe('AdminService', () => {
         {
           provide: AuthService,
           useValue: mockAuthService,
+        },
+        {
+          provide: MailerService,
+          useValue: mockMailerService,
         },
       ],
     }).compile();
@@ -66,10 +76,9 @@ describe('AdminService', () => {
       date: new Date('2026-03-31'),
     };
 
-    const user = { id: 10 };
-    const parkingSpot = { id: 2 };
+    const user = { id: 10, email: 'user@test.com' };
+    const parkingSpot = { id: 2, row: 1, col: 3, is_electric: true };
     const savedBooking = {
-      id: 99,
       date: dto.date,
       user,
       parking_spot: parkingSpot,
@@ -85,7 +94,7 @@ describe('AdminService', () => {
     expect(mockUserRepository.findOneBy).toHaveBeenCalledWith({ id: 10 });
     expect(mockParkingSpotRepository.findOneBy).toHaveBeenCalledWith({ id: 2 });
     expect(mockBookingRepository.save).toHaveBeenCalled();
-    expect(result).toEqual(savedBooking);
+    expect(result).toMatchObject(savedBooking);
   });
 
   it('throws when creating booking and user is not found', async () => {
@@ -128,7 +137,13 @@ describe('AdminService', () => {
   });
 
   it('cancels a booking', async () => {
-    const booking = { id: 50, is_cancelled: false, cancelled_at: null };
+    const booking = {
+      id: 50,
+      is_cancelled: false,
+      cancelled_at: null,
+      user: { id: 10, email: 'user@test.com' },
+      parking_spot: { row: 1, col: 3, is_electric: true },
+    };
 
     mockBookingRepository.findOneBy.mockResolvedValue(booking);
     mockBookingRepository.save.mockResolvedValue({

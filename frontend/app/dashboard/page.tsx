@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import type { SubmitEvent } from "react";
+import type { FormEvent, SubmitEvent } from "react";
 import { AlertCircle } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
@@ -176,7 +176,7 @@ export default function Page() {
         };
     }, [dateRange.endDate, dateRange.startDate, stats]);
 
-    const handleSubmit = async (event: SubmitEvent<HTMLFormElement>) => {
+    const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
         await refreshForSelection(selectedPeriod, referenceDate);
